@@ -1,0 +1,68 @@
+/////
+// Primitive Values and Constructs
+/////
+BOOL = "TRUE" | "FALSE";
+
+CAP_LETTER = "A" | "B" | "C" | "D" | "E" | "F"
+           | "G" | "H" | "I" | "J" | "K" | "L"
+           | "M" | "N" | "O" | "P" | "Q" | "R"
+           | "S" | "T" | "U" | "V" | "W" | "X"
+           | "Y" | "Z";
+LWR_LETTER = "a" | "b" | "c" | "d" | "e" | "f"
+           | "g" | "h" | "i" | "j" | "k" | "l"
+           | "m" | "n" | "o" | "p" | "q" | "r"
+           | "s" | "t" | "u" | "v" | "w" | "x"
+           | "y" | "z";
+LETTER = ({ CAP_LETTER | LWR_LETTER });
+
+UNDR_SCR = "_";
+IDENT_SYM = UNDR_SCR | "!" | "?" | "$";
+IDENT_SUF = ({ UNDR_SCR | LETTER | DIGIT | IDENT_SYM });
+IDENT = ( UNDR_SCR, IDENT_SUF ) | ( LETTER, IDENT_SUF );
+
+STRING_BOD = ? any series of ascii characters ?;
+STRING = ( '"', STRING_BOD, '"' ) | ( "'", STRING_BOD, "'" );
+
+NZ_DIGIT = "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9";
+DIGIT = "0" | NZ_DIGIT;
+PNUM = NZ_DIGIT , { DIGIT };
+NNUM = "-", PNUM;
+NUM = PNUM | NNUM;
+
+// TODO - Add Datatypes?
+CONSTS = NUM | STRING | BOOL | TUPLE | IDENT | CALL;
+SIMP_VAL = CONSTS | LIST | MAP;
+
+LIST = "[", [ EXPRESSION, { ",", EXPRESSION }, [","]], "]";
+LIST_ACC = IDENT, "[", NUM, "]";
+MAP_ASGN = IDENT, "[", NUM, "]", "=", EXPRESSION;
+
+TUPLE = "(", EXPRESSION, ",", EXPRESSION, { ",", EXPRESSION }, ")";
+
+KEY_VAL = "<", CONSTS, ",", EXPRESSION, ">";
+MAP = "{", { KEY_VAL }, "}";
+MAP_ACC = IDENT, "[", CONSTS, "]";
+MAP_ASGN = IDENT, "[", CONSTS, "]", "=", EXPRESSION;
+
+CALL = IDENT, "(", EXPRESSION, ")";
+
+/////
+// Control Flow
+/////
+IF = "if", "(", EXPRESSION, ")", BLOCK;
+ELIF = IF, "else", IF;
+ELSE = IF, "else", BLOCK;
+
+FOR = "for", "(", ( VAR_DECL | VAR_ASGN ), ",", EXPRESSION, ",", EXPRESSION, ")", BLOCK;
+WHILE = "while", "(", EXPRESSION, ")", BLOCK;
+
+
+/////
+// Program hierarchy
+/////
+DECL_FUNC = "fun", IDENT, "(", [ IDENT, { ",", IDENT }], ")", BLOCK;
+BLOCK = "{", { STATEMENT }, "}";
+STATEMENT = DECL_VAR | 
+
+VAR_DECL = "var", IDENT, "=", EXPRESSION;
+VAR_ASGN = IDENT, "=", EXPRESSION;
