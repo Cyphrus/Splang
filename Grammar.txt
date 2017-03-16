@@ -1,7 +1,8 @@
 /////
 // Primitive Values and Constructs
 /////
-BOOL = "TRUE" | "FALSE";
+NULL = "null";
+BOOL = "true" | "false";
 
 CAP_LETTER = "A" | "B" | "C" | "D" | "E" | "F"
            | "G" | "H" | "I" | "J" | "K" | "L"
@@ -20,31 +21,52 @@ IDENT_SYM = UNDR_SCR | "!" | "?" | "$";
 IDENT_SUF = ({ UNDR_SCR | LETTER | DIGIT | IDENT_SYM });
 IDENT = ( UNDR_SCR, IDENT_SUF ) | ( LETTER, IDENT_SUF );
 
-STRING_BOD = ? any series of ascii characters ?;
+STRING_BOD = ? all visible ascii characters ?;
 STRING = ( '"', STRING_BOD, '"' ) | ( "'", STRING_BOD, "'" );
 
+Z_DIGIT = "0";
 NZ_DIGIT = "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9";
-DIGIT = "0" | NZ_DIGIT;
-PNUM = NZ_DIGIT , { DIGIT };
+DIGIT = Z_DIGIT | NZ_DIGIT;
+PNUM = Z_DIGIT | (NZ_DIGIT , { DIGIT });
 NNUM = "-", PNUM;
 NUM = PNUM | NNUM;
 
-// TODO - Add Datatypes?
-CONSTS = NUM | STRING | BOOL | TUPLE | IDENT | CALL;
-SIMP_VAL = CONSTS | LIST | MAP;
-
 LIST = "[", [ EXPRESSION, { ",", EXPRESSION }, [","]], "]";
 LIST_ACC = IDENT, "[", NUM, "]";
-MAP_ASGN = IDENT, "[", NUM, "]", "=", EXPRESSION;
+LIST_ASGN = IDENT, "[", NUM, "]", "=", EXPRESSION;
+LIST_SPL = IDENT, "[", [ PNUM ], ":", [ NUM ], "]";
+LIST_EXP = LIST | LIST_ASGN | LIST_ACC | LIST_SPL;
 
+PAREN = "(", EXPRESSION, ")";
 TUPLE = "(", EXPRESSION, ",", EXPRESSION, { ",", EXPRESSION }, ")";
+TUPLE_ACC = IDENT, "#", PNUM;
+TUPLE_EXP = TUPLE | TUPLE_ACC;
 
-KEY_VAL = "<", CONSTS, ",", EXPRESSION, ">";
-MAP = "{", { KEY_VAL }, "}";
+MAP = "{", { "<", CONSTS, ",", EXPRESSION, ">" }, "}";
 MAP_ACC = IDENT, "[", CONSTS, "]";
 MAP_ASGN = IDENT, "[", CONSTS, "]", "=", EXPRESSION;
+MAP_EXP = MAP | MAP_ACC;
 
 CALL = IDENT, "(", EXPRESSION, ")";
+
+CONSTS = NUM | STRING | BOOL | TUPLE_EXP | IDENT | CALL;
+SIMP_VAL = NULL | CONSTS | LIST_EXP | MAP_EXP;
+
+/////
+// Math
+/////
+MATH_0 = EXPRESSION, ("+" | "-"), EXPRESSION;
+MATH_1 = EXPRESSION, ("*" | "/" | "%"), EXPRESSION;
+INC_DEC = EXPRESSION, ("++" | "--");
+MATH_EXP = MATH_0 | MATH_1 | INC_DEC;
+
+/////
+// Bool Ops
+/////
+BOOL_AND = EXPRESSION, "&&", EXPRESSION;
+BOOL_OR = EXPRESSION, "||", EXPRESSION;
+BOOL_NOT = "!", EXPRESSION;
+BOOL_EXP = BOOL_AND | BOOL_OR | BOOL_NOT;
 
 /////
 // Control Flow
@@ -56,13 +78,16 @@ ELSE = IF, "else", BLOCK;
 FOR = "for", "(", ( VAR_DECL | VAR_ASGN ), ",", EXPRESSION, ",", EXPRESSION, ")", BLOCK;
 WHILE = "while", "(", EXPRESSION, ")", BLOCK;
 
+CONTROL = IF | ELIF | ELSE | FOR | WHILE;
 
 /////
 // Program hierarchy
 /////
+PROGRAM = { DECL_FUNC | VAR_DECL | CALL };
 DECL_FUNC = "fun", IDENT, "(", [ IDENT, { ",", IDENT }], ")", BLOCK;
 BLOCK = "{", { STATEMENT }, "}";
-STATEMENT = DECL_VAR | 
+STATEMENT = DECL_VAR | EXPRESSION | CONTROL;
+EXPRESSION = IDENT | VAR_ASGN | BOOL_EXP | MATH_EXP | SIMP_VAL | PAREN;
 
 VAR_DECL = "var", IDENT, "=", EXPRESSION;
 VAR_ASGN = IDENT, "=", EXPRESSION;
